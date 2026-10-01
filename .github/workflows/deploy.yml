@@ -1,0 +1,58 @@
+name: Deploy Wiki to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate wiki links
+        run: node scripts/lint-wiki.mjs
+
+      - name: Cache Quartz checkout and plugins
+        uses: actions/cache@v4
+        with:
+          path: |
+            .site/quartz
+            !.site/quartz/content
+            !.site/quartz/public
+          key: quartz-${{ hashFiles('scripts/site.mjs', 'quartz/quartz.config.yaml') }}
+
+      - name: Build site with Quartz
+        run: node scripts/site.mjs build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .site/quartz/public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

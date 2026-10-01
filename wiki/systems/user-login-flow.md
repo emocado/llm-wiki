@@ -37,6 +37,9 @@ sequenceDiagram
 ## Relevant Services & Concepts
 - Primary Service: [Auth Service](../entities/auth-service.md)
 - Architectural Constraints: [Service Boundaries](../concepts/service-boundaries.md)
+- Edge validation: [API Gateway](../entities/api-gateway.md)
+- Token model: [JWT Session Tokens](../concepts/jwt-session-tokens.md), [Refresh Token Rotation](../features/refresh-token-rotation.md)
+- When it breaks: [Debugging 401 Unauthorized](../runbooks/debugging-401-unauthorized.md)
 
 ## Change History
 - **2026-10-01**: Flow formalized during wiki bootstrap.

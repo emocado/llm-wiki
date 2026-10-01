@@ -41,16 +41,24 @@ LLM Wiki (This Repo):
 llm-wiki/
 ├── raw/                 # Layer 1: Immutable Source Documents (Inputs)
 │   ├── templates/       # Standard templates for human inputs
-│   └── 2026-10-auth/    # Ingested meeting notes, RFCs, PRDs, transcripts
+│   ├── worklogs/        # Personal dev diaries, one folder per engineer
+│   ├── how-to/          # Setup notes as people figured things out
+│   ├── debug-sessions/  # Raw debugging notes
+│   └── postmortems/ meetings/ rfcs/
 │
 ├── wiki/                # Layer 2: The Compiled Knowledge Base (Owned by LLM)
+│   ├── guides/          # How-tos: local setup, migrations, webhooks
+│   ├── runbooks/        # Debugging & incident playbooks
+│   ├── features/        # Implementation write-ups of features
+│   ├── people/          # Team directory / personal spaces
 │   ├── concepts/        # Architectural patterns, domain logic, protocols
 │   ├── entities/        # Services, databases, third-party vendors, teams
 │   ├── systems/         # End-to-end user journeys and cross-cutting flows
 │   ├── index.md         # Categorized directory of all wiki pages
 │   └── log.md           # Append-only chronological audit log
 │
-├── scripts/             # Lightweight utilities (e.g. link & orphan linter)
+├── quartz/              # Quartz site config + landing page
+├── scripts/             # Link linter, Quartz build script
 ├── .github/workflows/   # CI/CD: Automated PR validation & static site deployment
 └── SCHEMA.md            # Layer 3: The Agent Constitution (Rules & instructions)
 ```
@@ -117,11 +125,20 @@ Or instruct the AI agent to perform a holistic audit:
 
 ## Hosting the Wiki for Your Team
 
-To give teammates a polished, browser-based Confluence replacement, host the Markdown repository using a modern docs-as-code frontend:
+The wiki is published with [Quartz v5](https://quartz.jzhao.xyz/) to GitHub Pages: **https://emocado.github.io/llm-wiki/**
 
-### Recommended: [Quartz](https://quartz.jzhao.xyz/) or [VitePress](https://vitepress.dev/)
-- **Quartz:** Obsidian-compatible out of the box, supports `[[wikilinks]]`, renders interactive dependency graph views, has instant full-text search, and deploys to Cloudflare Pages, GitHub Pages, or Vercel.
-- **GitHub Pages / Internal Portal:** With the included GitHub Actions workflow, every merge to `main` automatically builds and publishes the wiki to a private team URL.
+Quartz gives full-text search, a graph view, backlinks, folder pages, tags, and Mermaid diagrams, with no changes to the Markdown.
+
+- **Deploy:** `.github/workflows/deploy.yml` runs on every push to `main`. It lints the wiki, builds with Quartz, and publishes to Pages.
+- **Config:** `quartz/quartz.config.yaml` holds the site config, and `quartz/home.md` is the landing page. Quartz itself isn't vendored. `scripts/site.mjs` clones a pinned release into `.site/quartz` (gitignored) and stages `wiki/` and `raw/` as content, so relative links between them still work.
+- **Preview locally** (Node 22+):
+
+  ```bash
+  node scripts/site.mjs serve   # http://localhost:8080
+  node scripts/site.mjs build   # static output in .site/quartz/public
+  ```
+
+  The first run clones Quartz and installs its plugins, which takes a few minutes. Later runs reuse the checkout.
 
 ---
 

@@ -16,10 +16,16 @@ You are the **Lead Knowledge Architect and Librarian** for this repository. Your
 
 ## 2. Directory Layout & Taxonomy
 
-- `raw/`: Unprocessed input documents (meeting notes, RFCs, transcripts, postmortems).
+- `raw/`: Unprocessed input documents, grouped by kind:
+  - `raw/worklogs/<author>/YYYY-MM-DD-<topic>.md`: personal dev diaries ("worked on X, here's how").
+  - `raw/how-to/`, `raw/debug-sessions/`, `raw/postmortems/`, `raw/meetings/`, `raw/rfcs/`.
 - `wiki/concepts/`: Abstract ideas, architectural principles, domain definitions (e.g., `event-driven-architecture.md`, `jwt-session-tokens.md`).
 - `wiki/entities/`: Tangible components, services, teams, databases, external vendors (e.g., `billing-service.md`, `stripe-api.md`).
 - `wiki/systems/`: End-to-end integration workflows, cross-cutting flows (e.g., `checkout-journey.md`, `onboarding-pipeline.md`).
+- `wiki/guides/`: Task-oriented how-tos and setup instructions (e.g., `local-dev-environment.md`). Compiled mainly from `raw/how-to/`.
+- `wiki/runbooks/`: Debugging and incident playbooks with symptoms, commands, and known causes. Compiled from `raw/debug-sessions/` and `raw/postmortems/`.
+- `wiki/features/`: Implementation write-ups of a feature: design, data model, rollout, metrics, owner, PRs. Compiled from worklogs and RFCs.
+- `wiki/people/`: One page per engineer: role, ownership, current focus, and links to their features and raw worklogs.
 - `wiki/index.md`: Categorized table of contents mapping all wiki pages with one-sentence summaries.
 - `wiki/log.md`: Append-only chronological changelog.
 
@@ -101,7 +107,7 @@ When answering questions about the systems or organization:
 When asked to lint the knowledge base:
 
 1. **Link Verification:** Ensure all Markdown links point to existing files.
-2. **Catalog Parity:** Ensure every file in `wiki/concepts/`, `wiki/entities/`, and `wiki/systems/` has an entry in `wiki/index.md`.
+2. **Catalog Parity:** Ensure every content page under `wiki/` has an entry in `wiki/index.md`.
 3. **Orphan Detection:** Flag pages that have zero inbound links from other wiki pages.
 4. **Stale/Conflict Audit:** Identify pages that haven't been updated recently or contain conflicting architectural claims.
 5. Report findings and suggest fixes.
