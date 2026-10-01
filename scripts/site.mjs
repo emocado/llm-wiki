@@ -6,8 +6,8 @@
  *   node scripts/site.mjs build   # outputs to .site/quartz/public
  *   node scripts/site.mjs serve   # live preview on http://localhost:8080
  *
- * Quartz is not vendored: a pinned release is cloned into .site/quartz (gitignored),
- * our config from quartz/ is copied over it, and wiki/ + raw/ are staged as content.
+ * Quartz is not vendored: a pinned commit is fetched into .site/quartz (gitignored), our config
+ * from quartz/ is copied over it, and wiki/ + raw/ are staged as content.
  */
 
 import fs from 'node:fs';
@@ -15,7 +15,9 @@ import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const QUARTZ_VERSION = 'v5.0.0';
+// A commit on Quartz's v5 branch. The v5.0.0 tag predates base-path support, without which search,
+// graph and explorer links drop the /llm-wiki/ prefix on GitHub Pages.
+const QUARTZ_COMMIT = '97a2d05f80c4c50534959b1d0d41cc4b3895625e';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const quartzDir = path.join(rootDir, '.site', 'quartz');
@@ -28,13 +30,24 @@ function run(cmd, cwd = quartzDir) {
 }
 
 // 1. Fetch pinned Quartz and install its dependencies + plugins (cached after first run).
-if (!fs.existsSync(path.join(quartzDir, 'package.json'))) {
-  fs.mkdirSync(path.dirname(quartzDir), { recursive: true });
-  run(`git clone --depth 1 --branch ${QUARTZ_VERSION} https://github.com/jackyzha0/quartz.git "${quartzDir}"`, rootDir);
+function checkedOutCommit() {
+  try {
+    return execSync('git rev-parse HEAD', { cwd: quartzDir, encoding: 'utf-8' }).trim();
+  } catch {
+    return null;
+  }
+}
+if (checkedOutCommit() !== QUARTZ_COMMIT) {
+  fs.rmSync(quartzDir, { recursive: true, force: true });
+  fs.mkdirSync(quartzDir, { recursive: true });
+  run('git init -q');
+  run(`git fetch -q --depth 1 https://github.com/jackyzha0/quartz.git ${QUARTZ_COMMIT}`);
+  run('git checkout -q FETCH_HEAD');
 }
 if (!fs.existsSync(path.join(quartzDir, 'node_modules'))) run('npm ci');
 fs.copyFileSync(path.join(rootDir, 'quartz', 'quartz.config.yaml'), path.join(quartzDir, 'quartz.config.yaml'));
-run('npx quartz plugin restore');
+// Plugins are npm dependencies pinned by Quartz's package-lock; this only adds any extra ones from our config.
+run('npx quartz plugin install --from-config');
 
 // 2. Stage content. wiki/ and raw/ keep their repo-relative layout so links between them resolve.
 fs.rmSync(contentDir, { recursive: true, force: true });
@@ -75,16 +88,3 @@ function stage(file) {
 
 // 3. Build or serve.
 run(mode === 'serve' ? 'npx quartz build --serve' : 'npx quartz build');
-
-// 4. The search, graph and explorer plugins fetch "/static/contentIndex.json" from the domain root,
-// which 404s when the site is served from a subpath (emocado.github.io/llm-wiki/). postscript.js is
-// an ES module at the site root, so resolve the index relative to it instead.
-if (mode !== 'serve') {
-  const postscript = path.join(quartzDir, 'public', 'postscript.js');
-  const js = fs.readFileSync(postscript, 'utf-8');
-  const absoluteFetch = 'fetch("/static/contentIndex.json")';
-  if (!js.includes(absoluteFetch)) {
-    throw new Error(`site.mjs: expected ${absoluteFetch} in postscript.js; Quartz output changed, revisit this patch`);
-  }
-  fs.writeFileSync(postscript, js.replaceAll(absoluteFetch, 'fetch(new URL("./static/contentIndex.json", import.meta.url))'));
-}
