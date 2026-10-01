@@ -75,3 +75,16 @@ function stage(file) {
 
 // 3. Build or serve.
 run(mode === 'serve' ? 'npx quartz build --serve' : 'npx quartz build');
+
+// 4. The search, graph and explorer plugins fetch "/static/contentIndex.json" from the domain root,
+// which 404s when the site is served from a subpath (emocado.github.io/llm-wiki/). postscript.js is
+// an ES module at the site root, so resolve the index relative to it instead.
+if (mode !== 'serve') {
+  const postscript = path.join(quartzDir, 'public', 'postscript.js');
+  const js = fs.readFileSync(postscript, 'utf-8');
+  const absoluteFetch = 'fetch("/static/contentIndex.json")';
+  if (!js.includes(absoluteFetch)) {
+    throw new Error(`site.mjs: expected ${absoluteFetch} in postscript.js; Quartz output changed, revisit this patch`);
+  }
+  fs.writeFileSync(postscript, js.replaceAll(absoluteFetch, 'fetch(new URL("./static/contentIndex.json", import.meta.url))'));
+}
