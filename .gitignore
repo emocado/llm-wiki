@@ -4,6 +4,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+.obsidian/workspace*.json
 
 # Node / Dependencies (if any added later)
 node_modules/

@@ -142,6 +142,23 @@ Quartz gives full-text search, a graph view, backlinks, folder pages, tags, and 
 
 ---
 
+## Viewing & Searching with Obsidian
+
+The repository includes a ready-to-use `.obsidian/` configuration, turning the repository directly into an **Obsidian Vault**:
+
+1. **Open in Obsidian:** Launch Obsidian and choose **"Open folder as vault"**, then select this repository folder (`llm-wiki`).
+2. **Pre-configured Features:**
+   - **Pre-set Graph View Colors:** Concepts (Green), Entities (Blue), Features (Purple), Systems (Cyan), Guides (Teal), Runbooks (Amber), People (Pink), and Raw inputs (Slate).
+   - **Standard Markdown Links:** Set to use relative markdown links (`useMarkdownLinks: true`) for 100% interoperability with Quartz, GitHub, and local editors.
+   - **Noise Filtering:** `.git`, `.site`, and build caches are filtered out of search and explorer.
+   - **Instant Navigation:**
+     - `Ctrl + O`: Quick Switcher to jump between any wiki page or source.
+     - `Ctrl + Shift + F`: Global search (supports `tag:#auth`, `path:wiki/concepts`, etc.).
+     - `Ctrl + G`: Interactive Graph View.
+     - Hover with `Ctrl` over links for instant previews.
+
+---
+
 ## Confluence Migration Strategy
 
 1. **Phase 1: Space Export:** Export key Confluence spaces to Markdown/HTML using tools like `confluence-to-markdown` or native Atlassian space exports.

@@ -1,0 +1,12 @@
+{
+  "useMarkdownLinks": true,
+  "alwaysUpdateLinks": true,
+  "newFileFolderPath": "wiki",
+  "promptDelete": false,
+  "userIgnoreFilters": [
+    ".git/",
+    ".site/",
+    "node_modules/",
+    "scratch/"
+  ]
+}
